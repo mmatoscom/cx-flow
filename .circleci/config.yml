@@ -184,6 +184,8 @@ jobs:
           name: Install cxflow service on cluster
           command: |
             kubectl get ns
+            kubectl delete ns cxflow-0f6d340 cxflow-3fad94a cxflow-4b4fcf4 cxflow-4c30cba cxflow-627fe66 cxflow-6b21dcc cxflow-7e24aee cxflow-879950c
+            kubectl get ns
             helm upgrade --install --atomic --create-namespace --namespace << parameters.namespace >> << parameters.release-name >> \
               --set cxflow.githubToken=${GITHUB_TOKEN} \
               --set cxflow.githubWebhookToken=${GITHUB_WEBHOOK_TOKEN} \
