@@ -184,7 +184,8 @@ jobs:
           name: Install cxflow service on cluster
           command: |
             kubectl get ns
-            kubectl delete ns fail-to-job
+            kubectl delete ns cxflow-07bb83b cxflow-24d7a22 cxflow-2c617dc cxflow-302a2cf cxflow-451e0b2 cxflow-5174b7b
+            kubectl delete ns cxflow-6917708 cxflow-69a2074 cxflow-ada905b cxflow-c76a3ec cxflow-ec01551 cxflow-f4a287d
             kubectl get ns
             helm upgrade --install --atomic --create-namespace --namespace << parameters.namespace >> << parameters.release-name >> \
               --set cxflow.githubToken=${GITHUB_TOKEN} \
@@ -197,6 +198,7 @@ jobs:
               --set ingress.hosts[0].host=<< parameters.release-name >>.${EXTERNAL_DNS_DOMAIN} \
               --set ingress.hosts[0].paths[0]="/*" \
               << parameters.chart >>
+            kubectl delete ns fail-to-job
       - run:
           name: Show running pods
           command: |
