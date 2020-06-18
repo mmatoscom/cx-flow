@@ -183,12 +183,12 @@ jobs:
       - run:
           name: Install cxflow service on cluster
           command: |
-            kubectl get ns
-            #kubectl delete ns cxflow-04a10f8 cxflow-1be5451 cxflow-2a0c4b2 cxflow-5de2bd5 cflow-67c62f6 cxflow-69016ba cxflow-9b34b4d cxflow-a1b42e2 cxflow-ba5e7b1 cxflow-c85a725 cxflow-cec01fa
+            kubectl get ns -o jsonpath="{.items[*].metadata.name}"
+            #kubectl delete ns cxflow-0386203 cxflow-1e7e0cd 45h cxflow-4fbad98 cxflow-51bb852 cxflow-5b74d79 cxflow-601bbc9 cxflow-67c62f6 cxflow-929ca9c cxflow-9a438ed cxflow-e7b4d7b
             #kubectl get ns
-            for each in $(kubectl get ns -o jsonpath="{.items[*].metadata.name}" | grep -v kube-system);
+            for each in $(kubectl get ns -o jsonpath="{.items[*].metadata.name}");
               do
-                echo namespace is $each
+                echo namespace is ${each}
               done
             helm upgrade --install --atomic --create-namespace --namespace << parameters.namespace >> << parameters.release-name >> \
               --set cxflow.githubToken=${GITHUB_TOKEN} \
