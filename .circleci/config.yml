@@ -453,7 +453,14 @@ workflows:
   nightly-cleanup:
     triggers:
       - schedule:
-          cron: "38 17 * * *"
+          cron: "40 17 * * *"
+          filters:
+            branches:
+              only:
+                - master
+                - develop
+                - /pr-.*/
+                - /pr .*/
     jobs:
       - clean-eks
   
