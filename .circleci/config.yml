@@ -357,11 +357,12 @@ jobs:
             NS_TO_DELETE=$(kubectl get ns -o jsonpath="{.items[*].metadata.name}" | sed 's/default//g' | sed 's/kube-node-lease//g' | sed 's/kube-public//g' | sed 's/kube-system//g' | sed 's/nginx-kibana-ci//g' | sed 's/test//g')
             echo "NS_TO_DELETE: ${NS_TO_DELETE}"
             echo "End of Print"
-            if [ "${NS_TO_DELETE}" != "" ];
-            then
-              echo "Delete."
-            else
+            if [[ $NS_TO_DELETE =~ ^\ +$ ]] ;then 
+              echo -e "Has length, and contain only whitespace  \"$NS_TO_DELETE\"" 
               echo "No namespaces to delete."
+            else 
+              echo -e "Is either null or contain non-whitespace \"$NS_TO_DELETE\" "
+              echo "Delete."
             fi
 
 orbs:
@@ -460,7 +461,7 @@ workflows:
   nightly-cleanup:
     triggers:
       - schedule:
-          cron: "38 10 * * *"
+          cron: "51 10 * * *"
           filters:
             branches:
               only:
