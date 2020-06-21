@@ -462,7 +462,7 @@ workflows:
   nightly-cleanup:
     triggers:
       - schedule:
-          cron: "59 10 * * *"
+          cron: "03 11 * * *"
           filters:
             branches:
               only:
