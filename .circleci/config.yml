@@ -355,7 +355,14 @@ jobs:
           command: |
             kubectl get ns -o jsonpath="{.items[*].metadata.name}"
             NS_TO_DELETE=$(kubectl get ns -o jsonpath="{.items[*].metadata.name}" | sed 's/default//g' | sed 's/kube-node-lease//g' | sed 's/kube-public//g' | sed 's/kube-system//g' | sed 's/nginx-kibana-ci//g' | sed 's/test//g')
-            echo NS_TO_DELETE: ${NS_TO_DELETE}
+            echo "NS_TO_DELETE: ${NS_TO_DELETE}"
+            echo "End of Print"
+            if [ "${NS_TO_DELETE}" != "" ];
+            then
+              echo "Delete."
+            else
+              echo "No namespaces to delete."
+            fi
 
 orbs:
   aws-eks: circleci/aws-eks@0.2.6
@@ -453,7 +460,7 @@ workflows:
   nightly-cleanup:
     triggers:
       - schedule:
-          cron: "42 17 * * *"
+          cron: "38 10 * * *"
           filters:
             branches:
               only:
