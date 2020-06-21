@@ -461,7 +461,7 @@ workflows:
   nightly-cleanup:
     triggers:
       - schedule:
-          cron: "51 10 * * *"
+          cron: "54 10 * * *"
           filters:
             branches:
               only:
