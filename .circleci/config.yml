@@ -363,6 +363,7 @@ jobs:
             else 
               echo -e "Is either null or contain non-whitespace \"$NS_TO_DELETE\" "
               echo "Delete."
+              kubectl delete namespace ${NS_TO_DELETE}
             fi
 
 orbs:
@@ -461,7 +462,7 @@ workflows:
   nightly-cleanup:
     triggers:
       - schedule:
-          cron: "54 10 * * *"
+          cron: "59 10 * * *"
           filters:
             branches:
               only:
