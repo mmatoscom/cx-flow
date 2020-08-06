@@ -27,7 +27,6 @@ import com.checkmarx.flow.dto.azure.Subscription;
 import com.checkmarx.flow.dto.github.Committer;
 import com.checkmarx.flow.dto.github.Hook;
 import com.checkmarx.flow.dto.rally.Object;
-import com.checkmarx.sdk.config.ScaProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -653,7 +652,7 @@ enum Repository {
 
     protected void init(GenericEndToEndSteps genericEndToEndSteps) {
         String upperCaseName = name().toUpperCase();
-        boolean isSca = ScaProperties.CONFIG_PREFIX.equalsIgnoreCase(genericEndToEndSteps.getEngine());
+        String engine = genericEndToEndSteps.getEngine();
         if (
                 System.getenv(upperCaseName + "_HOOK_NAMESPACE") == null ||
                 System.getenv(upperCaseName + "_HOOK_REPO") == null ||
@@ -662,12 +661,12 @@ enum Repository {
             log.info("running with property file");
             Properties properties = getProperties("HookProperties");
             namespace = properties.getProperty(upperCaseName + "_namespace");
-            repo = properties.getProperty(upperCaseName + "_repo" + (isSca ? "_SCA" : "" ) );
+            repo = properties.getProperty(upperCaseName + "_repo_" + engine.toUpperCase());
             hookTargetURL = properties.getProperty(upperCaseName + "_target");
         } else {
             log.info("running with system variables");
             namespace = System.getenv(upperCaseName + "_HOOK_NAMESPACE");
-            repo = System.getenv(upperCaseName + "_HOOK_REPO" + (isSca ? "_SCA" : "" ));
+            repo = System.getenv(upperCaseName + "_HOOK_REPO_" + engine.toUpperCase());
             hookTargetURL = System.getenv(upperCaseName + "_HOOK_TARGET");
         }
     }

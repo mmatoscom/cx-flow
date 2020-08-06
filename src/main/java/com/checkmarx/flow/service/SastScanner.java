@@ -157,15 +157,12 @@ public class SastScanner implements VulnerabilityScanner {
 
     @Override
     public boolean isEnabled() {
-        boolean result = false;
-        List<String> enabledScanners = flowProperties.getEnabledVulnerabilityScanners();
-        if (enabledScanners == null || enabledScanners.isEmpty()) {
+        List<String> enabledScanners = Optional.ofNullable(flowProperties.getEnabledVulnerabilityScanners())
+            .orElse(Collections.emptyList());
+        if (enabledScanners.isEmpty()) {
             log.info("None of the vulnerability scanners is enabled in the configuration. Using CxSAST scanner by default.");
-            result = true;
-        } else if (StringUtils.containsIgnoreCase(enabledScanners.toString(), CxProperties.CONFIG_PREFIX)) {
-            result = true;
         }
-        return result;
+        return enabledScanners.isEmpty() || enabledScanners.stream().anyMatch(scanner -> scanner.equalsIgnoreCase(SCAN_TYPE));
     }
 
     public ScanDetails executeCxScan(ScanRequest request, File cxFile) throws MachinaException {

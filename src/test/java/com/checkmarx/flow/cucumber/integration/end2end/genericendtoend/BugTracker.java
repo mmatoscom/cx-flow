@@ -5,15 +5,15 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.SearchRestClient;
 import com.atlassian.jira.rest.client.api.domain.Issue;
@@ -21,7 +21,6 @@ import com.atlassian.jira.rest.client.api.domain.SearchResult;
 import com.atlassian.jira.rest.client.internal.async.CustomAsynchronousJiraRestClientFactory;
 import com.checkmarx.flow.config.JiraProperties;
 
-import com.checkmarx.sdk.config.CxProperties;
 import io.atlassian.util.concurrent.Promise;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,10 +31,16 @@ enum BugTracker {
         private JiraRestClient client;
         private SearchRestClient searchClient;
         private String jqlQuery;
+        private Map<String, BiFunction<String,String,String>>  jqlQueryByEngine = new HashMap<>();
 
 
         @Override
         void init(GenericEndToEndSteps genericEndToEndSteps) {
+            BiFunction<String, String, String> sastJqlFormat = (project , severities) -> String.format("project = %s and priority  in %s", project, severities);
+            jqlQueryByEngine.put("sast", sastJqlFormat);
+            jqlQueryByEngine.put("sca" , (project , severities) -> String.format("project = %s and summary ~\"CVE-?\"", jiraProperties.getProject()));
+            jqlQueryByEngine.put("ast" , sastJqlFormat);
+
             jiraProperties = genericEndToEndSteps.jiraProperties;
             CustomAsynchronousJiraRestClientFactory factory = new CustomAsynchronousJiraRestClientFactory();
             URI jiraURI;
@@ -52,13 +57,13 @@ enum BugTracker {
 
         @Override
         void verifyIssueCreated(String severities, String engine) {
-            jqlQuery =  (CxProperties.CONFIG_PREFIX.equalsIgnoreCase(engine))
-                    ? String.format("project = %s and priority  in %s", jiraProperties.getProject(), severities)
-                    : String.format("project = %s and summary ~\"CVE-?\"", jiraProperties.getProject());
+            
+            assertTrue(jqlQueryByEngine.containsKey(engine) , "verifyIssueCreated does not support engine: " + engine);
+            jqlQuery = jqlQueryByEngine.get(engine).apply(jiraProperties.getProject(), severities);
+
             log.info("filtering issue with jql: {}", jqlQuery);
-            Set<String> fields = new HashSet<>();
-            fields.addAll(
-                    Arrays.asList("key", "project", "issuetype", "summary", "labels", "created", "updated", "status"));
+            Set<String> fields = Stream.of("key", "project", "issuetype", "summary", "labels", "created", "updated", "status")
+                .collect(Collectors.toSet());
             SearchResult result = null;
             boolean found = false;
             for (int retries = 0; retries < 20; retries++) {
@@ -90,16 +95,16 @@ enum BugTracker {
         @Override
         void deleteIssues() {
             try {
-                Set<String> fields = new HashSet<>();
-                fields.addAll(
-                        Arrays.asList("key", "project", "issuetype", "summary", "labels", "created", "updated", "status"));
+                Set<String> fields = Stream.of("key", "project", "issuetype", "summary", "labels", "created", "updated", "status")
+                    .collect(Collectors.toSet());
                 Promise<SearchResult> temp = searchClient.searchJql(jqlQuery, 10, 0, fields);
                 SearchResult result = temp.get(500, TimeUnit.MILLISECONDS);
 
+                IssueRestClient issueClient = client.getIssueClient();
                 boolean isfound = false;
                 for (Issue currentIssue : result.getIssues()) {
                     isfound = true;
-                    client.getIssueClient().deleteIssue(currentIssue.getKey(), false);
+                    issueClient.deleteIssue(currentIssue.getKey(), false);
                 }
                 if (isfound) {
                     try {

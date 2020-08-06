@@ -56,8 +56,8 @@ public class GenericEndToEndSteps {
 
     @And("CxFlow is running as a service")
     public void runAsService() {
-        log.info("runnning cx-flow as a service (active profile: {})", engine);
-        appContext = TestUtils.runCxFlowAsServiceWithAdditionalProfiles(engine);
+        log.info("runnning cx-flow as a service");
+        appContext = TestUtils.runCxFlowAsService();
     }
 
     @And("repository is {word}")
