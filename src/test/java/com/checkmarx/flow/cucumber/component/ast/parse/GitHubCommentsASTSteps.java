@@ -405,20 +405,19 @@ public class GitHubCommentsASTSteps {
         if (scannerType.equalsIgnoreCase(AST_SCA)) {
             Assert.assertTrue(PullRequestCommentsHelper.isSastAndScaComment(comment) );
             
-            Assert.assertEquals(scanResultsToInject.getAstResults().getResults().getSummary().getHighVulnerabilityCount()+
-                    scanResultsToInject.getScaResults().getSummary().getFindingCounts().get(Filter.Severity.HIGH), highCounter);
-            Assert.assertEquals(scanResultsToInject.getAstResults().getResults().getSummary().getMediumVulnerabilityCount() +
-                    scanResultsToInject.getScaResults().getSummary().getFindingCounts().get(Filter.Severity.MEDIUM), mediumCounter);
-            Assert.assertEquals(scanResultsToInject.getAstResults().getResults().getSummary().getLowVulnerabilityCount()+
-                    scanResultsToInject.getScaResults().getSummary().getFindingCounts().get(Filter.Severity.LOW), lowCounter);
+            Map<com.checkmarx.sdk.dto.Filter.Severity, Integer> findingCounts = scanResultsToInject.getScaResults().getSummary().getFindingCounts();
+            AstSastSummaryResults summary = scanResultsToInject.getAstResults().getResults().getSummary();
+            Assert.assertEquals(summary.getHighVulnerabilityCount() + findingCounts.get(Filter.Severity.HIGH), highCounter);
+            Assert.assertEquals(summary.getMediumVulnerabilityCount() + findingCounts.get(Filter.Severity.MEDIUM), mediumCounter);
+            Assert.assertEquals(summary.getLowVulnerabilityCount() + findingCounts.get(Filter.Severity.LOW), lowCounter);
 
-        }
-        else if (scannerType.equalsIgnoreCase(AST)) {
+        } else if (scannerType.equalsIgnoreCase(AST)) {
             Assert.assertTrue(PullRequestCommentsHelper.isSastFindingsComment(comment));
 
-            Assert.assertEquals(scanResultsToInject.getAstResults().getResults().getSummary().getHighVulnerabilityCount(), highCounter);
-            Assert.assertEquals(scanResultsToInject.getAstResults().getResults().getSummary().getMediumVulnerabilityCount(), mediumCounter);
-            Assert.assertEquals(scanResultsToInject.getAstResults().getResults().getSummary().getLowVulnerabilityCount(), lowCounter);
+            AstSastSummaryResults summary = scanResultsToInject.getAstResults().getResults().getSummary();
+            Assert.assertEquals(summary.getHighVulnerabilityCount(), highCounter);
+            Assert.assertEquals(summary.getMediumVulnerabilityCount(), mediumCounter);
+            Assert.assertEquals(summary.getLowVulnerabilityCount(), lowCounter);
 
         }
         

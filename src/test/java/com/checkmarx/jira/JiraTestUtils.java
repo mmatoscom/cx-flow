@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 
 @TestComponent
@@ -247,12 +248,10 @@ Line #222:
 
     private boolean isProjectExits(String issueType) {
         Iterable<BasicProject> projects =  client.getProjectClient().getAllProjects().claim();
-        for (BasicProject bp: projects) {
-            if (bp.getKey().equals(issueType)) {
-                return true;
-            }
-        }
-        return false;
+        return StreamSupport.stream(projects.spliterator(), false)
+            .filter(bp -> bp.getKey().equals(issueType))
+            .findAny()
+            .isPresent();
     }
 
 

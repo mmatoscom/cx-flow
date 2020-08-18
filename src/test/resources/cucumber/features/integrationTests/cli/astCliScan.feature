@@ -1,8 +1,8 @@
-@SAST_CLI_SCAN @IntegrationTest
-Feature: Cx-Flow CLI SAST Integration tests
+@AST_CLI_SCAN @IntegrationTest
+Feature: Cx-Flow CLI AST Integration tests
 
-  Background: running SAST scan
-    Given repository is github-sast
+  Background: running AST scan
+    Given repository is github-ast
 
   Scenario Outline: Testing break-build functionality
     When running with break-build on <issue-type>
@@ -16,7 +16,7 @@ Feature: Cx-Flow CLI SAST Integration tests
 
   Scenario Outline: Testing cli filter functionality
     Given code has x High, y Medium and z low issues
-    When running sast scan <filter>
+    When running ast scan <filter>
     Then bugTracker contains <number of issue> issues
 
     Examples:
