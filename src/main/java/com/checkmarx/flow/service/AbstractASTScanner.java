@@ -20,10 +20,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @RequiredArgsConstructor
 public abstract class AbstractASTScanner implements VulnerabilityScanner {
+    private static final String MATCH_EVERYTHING_AFTER_COLONS = "\\:(.*)";
     private final com.checkmarx.sdk.service.AstClient client;
     private final FlowProperties flowProperties;
     private final String scanType;
@@ -116,22 +119,23 @@ public abstract class AbstractASTScanner implements VulnerabilityScanner {
     protected abstract ScanResults toScanResults(ASTResultsWrapper internalResults);
 
 
-    protected ScanParams toSdkScanParams(ScanRequest scanRequest) {
-        URL parsedUrl = getRepoUrl(scanRequest);
+    private ScanParams toSdkScanParams(ScanRequest scanRequest) {
+        URL parsedUrl = getRepoUrl(scanRequest.getRepoUrl());
 
         return ScanParams.builder()
                 .projectName(scanRequest.getProject())
                 .remoteRepoUrl(parsedUrl)
                 .scaConfig(scanRequest.getScaConfig())
+                .accessToken(extractOauthTokenFromUrl(scanRequest.getRepoType(), getRepoUrl(scanRequest.getRepoUrlWithAuth())))
                 .build();
     }
 
-    private URL getRepoUrl(ScanRequest scanRequest) {
+    private URL getRepoUrl(String repoUrl) {
         URL parsedUrl;
         try {
-            parsedUrl = new URL(scanRequest.getRepoUrlWithAuth());
+            parsedUrl = new URL(repoUrl);
         } catch (MalformedURLException e) {
-            log.error("Failed to parse repository URL: '{}'", scanRequest.getRepoUrl());
+            log.error("Failed to parse repository URL: '{}'", repoUrl);
             throw new MachinaRuntimeException("Invalid repository URL.");
         }
         return parsedUrl;
@@ -150,6 +154,30 @@ public abstract class AbstractASTScanner implements VulnerabilityScanner {
         String scanId = getScanId(internalResults);
         ScanReport report = new ScanReport(scanId, request, request.getRepoUrl(), scanCreationResult, AnalyticsReport.SCA);
         report.log();
+    }
+
+    private String extractOauthTokenFromUrl(ScanRequest.Repository repoType, URL url) {
+        String userInfo = url.getUserInfo();
+
+        switch (repoType) {
+            case GITLAB:
+                Pattern pattern = Pattern.compile(MATCH_EVERYTHING_AFTER_COLONS, Pattern.MULTILINE);
+                Matcher matcher = pattern.matcher(userInfo);
+                if (matcher.find()) {
+                    userInfo = matcher.group(1);
+                } else {
+                    throw new MachinaRuntimeException("Failed to extract oauth token from URL for repo type: " + repoType);
+                }
+                break;
+            case GITHUB:
+            case ADO:
+            case BITBUCKET:
+            case BITBUCKETSERVER:
+                break;
+            default:
+                throw new MachinaRuntimeException("Repository type: " + repoType + " is not supported");
+        }
+        return userInfo;
     }
 }
 
