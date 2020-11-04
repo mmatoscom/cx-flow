@@ -114,7 +114,7 @@ public class CxFlowRunner implements ApplicationRunner {
         ScanRequest.Repository repoType = ScanRequest.Repository.NA;
         boolean osa;
         boolean force;
-        FlowOverride o = null;
+        FlowOverride flowOverride = null;
         ObjectMapper mapper = new ObjectMapper();
         String uid = helperService.getShortUid();
         MDC.put(FlowConstants.MAIN_MDC_ENTRY, uid);
@@ -135,7 +135,7 @@ public class CxFlowRunner implements ApplicationRunner {
         if (args.containsOption("config")) {
             config = args.getOptionValues("config").get(0);
             try {
-                o = mapper.readValue(new File(config), FlowOverride.class);
+                flowOverride = mapper.readValue(new File(config), FlowOverride.class);
             } catch (IOException e) {
                 log.error("Error reading config file, ignoring...", e);
             }
@@ -316,7 +316,7 @@ public class CxFlowRunner implements ApplicationRunner {
                 .forceScan(force)
                 .build();
 
-        request = configOverrider.overrideScanRequestProperties(o, request);
+        request = configOverrider.overrideScanRequestProperties(flowOverride, request);
         /*Determine if BitBucket Cloud/Server is being used - this will determine formatting of URL that links to file/line in repository */
         request.setId(uid);
         if (usingBitBucketCloud) {

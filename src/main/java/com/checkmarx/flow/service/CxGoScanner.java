@@ -20,10 +20,8 @@ import java.util.List;
 public class CxGoScanner extends AbstractVulnerabilityScanner {
 
     private final CxGoClientImpl cxGoClient;
-    private static final String SCAN_TYPE = CxGoProperties.CONFIG_PREFIX;
     protected final ScanRequestConverter scanRequestConverter;
     protected final CxGoProperties cxGoProperties;
-    private final CxProperties cxProperties;
 
     public CxGoScanner(ResultsService resultsService,
                        HelperService helperService,
@@ -37,7 +35,6 @@ public class CxGoScanner extends AbstractVulnerabilityScanner {
         this.cxGoClient = cxGoClient;
         this.scanRequestConverter = new ScanRequestConverter(helperService,flowProperties,bugTrackersDto.getGitService(),bugTrackersDto.getGitLabService(),bugTrackersDto.getBitBucketService(),bugTrackersDto.getAdoService(),bugTrackersDto.getSessionTracker(),cxGoClient,cxGoProperties);
         this.cxGoProperties = cxGoProperties;
-        this.cxProperties = cxProperties;
     }
 
     @Override
@@ -74,7 +71,6 @@ public class CxGoScanner extends AbstractVulnerabilityScanner {
         List<String> enabledScanners = flowProperties.getEnabledVulnerabilityScanners();
 
         return enabledScanners != null
-                && enabledScanners.stream().anyMatch(scanner -> scanner.equalsIgnoreCase(SCAN_TYPE));
-
+                && enabledScanners.stream().anyMatch(scanner -> scanner.equalsIgnoreCase(CxGoProperties.CONFIG_PREFIX));
     }
 }
